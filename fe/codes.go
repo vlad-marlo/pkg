@@ -2,8 +2,12 @@ package fe
 
 import "net/http"
 
+// Code is alias to integer.
+//
+// Code uses only with this package. You can setup returned code by error with this.
 type Code int
 
+// Setup codes with default values.
 const (
 	CodeInternalServerError Code = iota
 	CodeContinue
