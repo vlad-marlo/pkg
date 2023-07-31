@@ -1,5 +1,4 @@
 .idea
 /vendor
-cover.html
-cover.out
+./cover.*
 /bin
