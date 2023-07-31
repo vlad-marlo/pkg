@@ -1,12 +1,11 @@
 package fe
 
 import (
-	"go.uber.org/zap"
 	"net/http"
 )
 
 // Error is custom error that is using in service to deliver error to controllers with prepared statuses and log fields.
-type Error struct {
+type Error[T any] struct {
 	// msg is error message that will be returned when Error() is called.
 	msg string
 	// Data stores http response if it must be returned back to user.
@@ -14,18 +13,18 @@ type Error struct {
 	// Code must be internal code from this pkg.
 	code Code
 	// Fields is additional field for zap logger.
-	fields []zap.Field
+	fields []T
 	// parent is parent error
 	parent error
 }
 
 // New creates new error with provided fields.
-func New(msg string, data any, code Code, fields ...zap.Field) *Error {
-	return &Error{msg, data, code, fields, nil}
+func New[T any](msg string, data any, code Code, fields ...T) *Error[T] {
+	return &Error[T]{msg, data, code, fields, nil}
 }
 
 // Error return error message.
-func (f *Error) Error() string {
+func (f *Error[T]) Error() string {
 	if f == nil {
 		return ""
 	}
@@ -33,7 +32,7 @@ func (f *Error) Error() string {
 }
 
 // CodeHTTP returns http Code that is equal to custom one.
-func (f *Error) CodeHTTP() int {
+func (f *Error[T]) CodeHTTP() int {
 	if f == nil {
 		return http.StatusInternalServerError
 	}
@@ -44,11 +43,11 @@ func (f *Error) CodeHTTP() int {
 }
 
 // With create new error object that copies error fields instead of Fields
-func (f *Error) With(fields ...zap.Field) *Error {
+func (f *Error[T]) With(fields ...T) *Error[T] {
 	if f == nil {
-		return &Error{fields: fields}
+		return &Error[T]{fields: fields}
 	}
-	return &Error{
+	return &Error[T]{
 		msg:    f.msg,
 		data:   f.data,
 		code:   f.code,
@@ -58,11 +57,11 @@ func (f *Error) With(fields ...zap.Field) *Error {
 }
 
 // WithData create new error object that copies error fields instead of data.
-func (f *Error) WithData(data any) *Error {
+func (f *Error[T]) WithData(data any) *Error[T] {
 	if f == nil {
-		return &Error{data: data}
+		return &Error[T]{data: data}
 	}
-	return &Error{
+	return &Error[T]{
 		msg:    f.msg,
 		data:   data,
 		code:   f.code,
@@ -72,7 +71,7 @@ func (f *Error) WithData(data any) *Error {
 }
 
 // Data return data to return to user.
-func (f *Error) Data() any {
+func (f *Error[T]) Data() any {
 	if f == nil {
 		return nil
 	}
@@ -80,7 +79,7 @@ func (f *Error) Data() any {
 }
 
 // Code return internal code.
-func (f *Error) Code() Code {
+func (f *Error[T]) Code() Code {
 	if f == nil {
 		return 0
 	}
@@ -88,7 +87,7 @@ func (f *Error) Code() Code {
 }
 
 // Fields return zap fields.
-func (f *Error) Fields() []zap.Field {
+func (f *Error[T]) Fields() []T {
 	if f == nil {
 		return nil
 	}
@@ -96,7 +95,7 @@ func (f *Error) Fields() []zap.Field {
 }
 
 // Unwrap make available to use errors.Is with *Error.
-func (f *Error) Unwrap() error {
+func (f *Error[T]) Unwrap() error {
 	if f == nil {
 		return nil
 	}

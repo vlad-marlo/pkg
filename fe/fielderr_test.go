@@ -3,7 +3,6 @@ package fe
 import (
 	"crypto/rand"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 	"testing"
 
@@ -20,19 +19,19 @@ func randomString() string {
 
 var (
 	someData  = ""
-	testError = &Error{
+	testError = &Error[string]{
 		msg:    "some msg",
 		data:   nil,
 		code:   CodeInternalServerError,
-		fields: []zap.Field{},
+		fields: []string{},
 		parent: nil,
 	}
 )
 
 func TestNewError(t *testing.T) {
 	msg, data := "err", map[string]any{"xd": "ds"}
-	err1 := New(msg, data, CodeInternalServerError)
-	err2 := New(msg, data, CodeInternalServerError)
+	err1 := New[int](msg, data, CodeInternalServerError)
+	err2 := New[int](msg, data, CodeInternalServerError)
 	assert.NotErrorIs(t, err1, err2)
 	assert.Equal(t, err1, err2)
 	wrappedErr1 := fmt.Errorf("err: %w", err1)
@@ -43,29 +42,29 @@ func TestNewError(t *testing.T) {
 func TestFieldError_Error(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		msg := randomString()
-		var err error = &Error{
+		var err error = &Error[int]{
 			data: nil,
 			msg:  msg,
 		}
 		assert.Equal(t, err.Error(), msg)
 	}
-	var err *Error
+	var err *Error[int]
 	assert.Equal(t, "", err.Error())
 }
 
 func TestFieldError_Fields(t *testing.T) {
 	fields := map[string]any{}
-	var err = &Error{data: fields}
+	err := &Error[int]{data: fields}
 	assert.Equal(t, fields, err.Data())
-	assert.Equal(t, nil, (*Error)(nil).Data())
+	assert.Equal(t, nil, (*Error[int])(nil).Data())
 }
 
 func TestError_CodeHTTP(t *testing.T) {
 	for k, v := range httpCodes {
-		assert.Equal(t, v, (&Error{code: k}).CodeHTTP())
+		assert.Equal(t, v, (&Error[int]{code: k}).CodeHTTP())
 	}
-	assert.Equal(t, http.StatusInternalServerError, (&Error{code: 123}).CodeHTTP())
-	assert.Equal(t, http.StatusInternalServerError, (*Error)(nil).CodeHTTP())
+	assert.Equal(t, http.StatusInternalServerError, (&Error[int]{code: 123}).CodeHTTP())
+	assert.Equal(t, http.StatusInternalServerError, (*Error[int])(nil).CodeHTTP())
 }
 
 func TestErrorIs(t *testing.T) {
@@ -76,45 +75,46 @@ func TestErrorIs(t *testing.T) {
 	}
 	code := CodeInternalServerError
 
-	err := New(msg, data, code)
-	newErr := err.With(zap.String("string", "sdf"), zap.Error(nil))
+	err := New[string](msg, data, code)
+	newErr := err.With("aboba", "other field")
 	assert.ErrorIs(t, error(newErr), error(err))
 	assert.NotEqual(t, error(err), error(newErr))
-	assert.Equal(t, (error)(nil), (*Error)(nil).Unwrap())
+	assert.Equal(t, (error)(nil), (*Error[string])(nil).Unwrap())
 }
 
 //goland:noinspection GoNilness
 func TestError_Fields(t *testing.T) {
-	fields := []zap.Field{
-		zap.String("xd", "xd"),
+	fields := []int{
+		1,
+		2,
 	}
-	err := &Error{fields: fields}
+	err := &Error[int]{fields: fields}
 	assert.Equal(t, err.Fields(), err.fields)
 	err = nil
-	assert.Equal(t, ([]zap.Field)(nil), err.Fields())
+	assert.Equal(t, ([]int)(nil), err.Fields())
 }
 
 func TestError_With(t *testing.T) {
-	fields := []zap.Field{zap.String("", "")}
-	err := (*Error)(nil).With(fields...)
-	assert.Equal(t, &Error{fields: fields}, err)
+	fields := []string{"one"}
+	err := (*Error[string])(nil).With(fields...)
+	assert.Equal(t, &Error[string]{fields: fields}, err)
 }
 
 func TestError_Code(t *testing.T) {
-	err := &Error{code: CodeInternalServerError}
-	assert.Equal(t, Code(0), (*Error)(nil).Code())
+	err := &Error[string]{code: CodeInternalServerError}
+	assert.Equal(t, Code(0), (*Error[string])(nil).Code())
 	assert.Equal(t, err.code, err.Code())
 }
 
 func TestError_WithData(t *testing.T) {
 	tt := []struct {
 		name string
-		err  *Error
-		want *Error
+		err  *Error[string]
+		want *Error[string]
 		data any
 	}{
-		{"nil error", nil, &Error{data: someData}, someData},
-		{"non nil error", testError, &Error{
+		{"nil error", nil, &Error[string]{data: someData}, someData},
+		{"non nil error", testError, &Error[string]{
 			msg:    testError.msg,
 			data:   someData,
 			code:   testError.code,
