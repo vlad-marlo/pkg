@@ -26,9 +26,9 @@ Released under the [MIT License].
 
 [MIT License]: LICENSE
 
-[doc-img]: https://pkg.go.dev/badge/go.uber.org/multierr
+[doc-img]: https://pkg.go.dev/badge/github.com/vlad-marlo/pkg
 
-[doc]: https://pkg.go.dev/go.uber.org/multierr
+[doc]: https://pkg.go.dev/github.com/vlad-marlo/pkg
 
 [ci-img]: https://github.com/vlad-marlo/pkg/actions/workflows/go.yml/badge.svg
 
