@@ -6,7 +6,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	log, err := New()
+	log, err := New(nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, log)
 }
