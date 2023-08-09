@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func New(fields ...zap.Field) (*zap.Logger, error) {
+func New(fields []zap.Field) (*zap.Logger, error) {
 	highPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= zapcore.ErrorLevel
 	})
