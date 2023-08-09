@@ -6,13 +6,20 @@ import (
 	"os"
 )
 
+func highPriorityLevelEnablerFunc(lvl zapcore.Level) bool {
+	return lvl >= zapcore.ErrorLevel
+}
+
+func lowPriorityLevelEnablerFunc(lvl zapcore.Level) bool {
+	return lvl < zapcore.ErrorLevel
+}
+
+// New creates logger.
+//
+// If all is good, developer can get access to logger by zap.L().
 func New(fields []zap.Field) (*zap.Logger, error) {
-	highPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= zapcore.ErrorLevel
-	})
-	lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl < zapcore.ErrorLevel
-	})
+	highPriority := zap.LevelEnablerFunc(highPriorityLevelEnablerFunc)
+	lowPriority := zap.LevelEnablerFunc(lowPriorityLevelEnablerFunc)
 
 	consoleDebugging := zapcore.Lock(os.Stdout)
 	consoleErrors := zapcore.Lock(os.Stderr)
