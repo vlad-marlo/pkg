@@ -36,7 +36,10 @@ func (f *Error[T]) CodeHTTP() int {
 	if f == nil {
 		return http.StatusInternalServerError
 	}
-	if c, ok := httpCodes[f.code]; ok {
+	globalMutex.RLock()
+	c, ok := httpCodes[f.code]
+	globalMutex.RUnlock()
+	if ok {
 		return c
 	}
 	return http.StatusInternalServerError

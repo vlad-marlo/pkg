@@ -1,6 +1,9 @@
 package fe
 
-import "net/http"
+import (
+	"net/http"
+	"sync"
+)
 
 // Code is alias to integer.
 //
@@ -72,6 +75,30 @@ const (
 	CodeNotExtended
 	CodeNetworkAuthenticationRequired
 )
+
+var (
+	globalMutex sync.RWMutex
+)
+
+func ReplaceCodesTable(table map[Code]int) func() {
+	globalMutex.Lock()
+	old := httpCodes
+	httpCodes = table
+	globalMutex.Unlock()
+	return func() {
+		ReplaceCodesTable(old)
+	}
+}
+
+func (c Code) HTTP() int {
+	globalMutex.RLock()
+	code, ok := httpCodes[c]
+	globalMutex.RUnlock()
+	if !ok {
+		return http.StatusInternalServerError
+	}
+	return code
+}
 
 var httpCodes = map[Code]int{
 	CodeContinue:                      http.StatusContinue,
